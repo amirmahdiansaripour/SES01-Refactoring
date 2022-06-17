@@ -21,7 +21,8 @@ public class EnrollmentControl {
 
         try { checkAlreadyPassedCourse(); } catch (CourseAlreadyPassedException e) { exceptions.add(e);}
         try { checkPrerequisitesPassed(); } catch (PrerequisitesNotPassedException e) { exceptions.add(e);}
-        try { checkExamConflict();} catch (ExamTimesConflictException e) { exceptions.add(e);}
+        try { checkExamConflict(); } catch (ExamTimesConflictException e) { exceptions.add(e);}
+        try { checkCourseTakenTwice(); } catch (CourseTakenTwiceException e) { exceptions.add(e);}
 
         for (OfferedCourse offeredCourse : courses) {
 
@@ -83,18 +84,15 @@ public class EnrollmentControl {
         }
     }
 
-  /*  public void check() {
+    public void checkCourseTakenTwice() throws CourseTakenTwiceException {
         for (OfferedCourse course1 : courses) {
             for (OfferedCourse course2 : courses) {
-                if (course1 == course2) continue;
-                if (course1.getExamTime().equals(course2.getExamTime()))
-                    throw new EnrollmentRulesViolationException(String.format("Two offerings %s and %s have the same exam time", course1, course2));
-                if (course1.getCourse().equals(course2.getCourse()))
-                    throw new EnrollmentRulesViolationException(String.format("%s is requested to be taken twice", course1.getCourse().getName()));
+                if (course1 != course2 && course1.getCourse().equals(course2.getCourse()))
+                    throw new CourseTakenTwiceException(course1.getCourse().getName());
             }
         }
     }
-*/
+
     private void checkTotalRequestedUnitsViolated() throws TotalRequestedUnitsViolationException {
         int unitsRequested = getUnitsRequested();
 
