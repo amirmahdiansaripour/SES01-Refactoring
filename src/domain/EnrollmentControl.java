@@ -3,12 +3,22 @@ package domain;
 import java.util.ArrayList;
 import java.util.List;
 
+import domain.exceptions.CourseAlreadyPassedException;
 import domain.exceptions.EnrollmentRulesViolationException;
 
 public class EnrollmentControl {
+    private Transcript transcript;
+    private List<OfferedCourse> courses;
+    private List<Exception> exceptions;
+
 	public void enroll(Student student, List<OfferedCourse> courses) throws EnrollmentRulesViolationException {
-        Transcript transcript = student.getTranscript();
-		for (OfferedCourse o : courses) {
+        transcript = student.getTranscript();
+		this.courses = courses;
+        exceptions = new ArrayList<>();
+
+        try { checkAlreadyPassedCourse(); } catch (CourseAlreadyPassedException e) { exceptions.add(e);}
+
+        for (OfferedCourse o : courses) {
             ArrayList<Course> allPassedCourses = transcript.getPassedCourses();
             for(Course passedCourse: allPassedCourses) {
                 if(passedCourse.equals(o.getCourse())) {
@@ -44,5 +54,20 @@ public class EnrollmentControl {
 			throw new EnrollmentRulesViolationException(String.format("Number of units (%d) requested does not match GPA of %f", unitsRequested, gpa));
 		for (OfferedCourse o : courses)
 			student.takeCourse(o.getCourse(), o.getSection());
+
+        if (!exceptions.isEmpty()) {
+            throw new EnrollmentRulesViolationException(exceptions.get(0).getMessage());
+        }
 	}
+
+    public void checkAlreadyPassedCourse() throws CourseAlreadyPassedException {
+        for (OfferedCourse course : courses) {
+            ArrayList<Course> passedCourses = transcript.getPassedCourses();
+            for (Course passedCourse : passedCourses) {
+                if (passedCourse.equals(course.getCourse())) {
+                    throw new CourseAlreadyPassedException(course.getCourse().getName());
+                }
+            }
+        }
+    }
 }
