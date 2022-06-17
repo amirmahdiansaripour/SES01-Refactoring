@@ -5,35 +5,23 @@ import java.util.List;
 
 import domain.exceptions.CourseAlreadyPassedException;
 import domain.exceptions.EnrollmentRulesViolationException;
+import domain.exceptions.PrerequisitesNotPassedException;
 
 public class EnrollmentControl {
-    private Transcript transcript;
     private List<OfferedCourse> courses;
-    private List<Exception> exceptions;
+    private ArrayList<Course> passedCourses;
 
-	public void enroll(Student student, List<OfferedCourse> courses) throws EnrollmentRulesViolationException {
-        transcript = student.getTranscript();
-		this.courses = courses;
-        exceptions = new ArrayList<>();
+    public void enroll(Student student, List<OfferedCourse> courses) throws EnrollmentRulesViolationException {
+        List<Exception> exceptions = new ArrayList<>();
+        Transcript transcript = student.getTranscript();
+
+        passedCourses = transcript.getPassedCourses();
+        this.courses = courses;
 
         try { checkAlreadyPassedCourse(); } catch (CourseAlreadyPassedException e) { exceptions.add(e);}
+        try { checkPrerequisitesPassed(); } catch (PrerequisitesNotPassedException e) { exceptions.add(e);}
 
         for (OfferedCourse o : courses) {
-            ArrayList<Course> allPassedCourses = transcript.getPassedCourses();
-            for(Course passedCourse: allPassedCourses) {
-                if(passedCourse.equals(o.getCourse())) {
-                    throw new EnrollmentRulesViolationException(String.format("The student has already passed %s", o.getCourse().getName()));
-                }
-            }
-			List<Course> prerequisites = o.getCourse().getPrerequisites();
-			nextPre:
-			for (Course preRequisite : prerequisites) {
-                for(Course passedCourse: allPassedCourses) {
-                    if(passedCourse.equals(preRequisite))
-                        continue nextPre;
-                }
-				throw new EnrollmentRulesViolationException(String.format("The student has not passed %s as a prerequisite of %s", preRequisite.getName(), o.getCourse().getName()));
-			}
             for (OfferedCourse o2 : courses) {
                 if (o == o2)
                     continue;
@@ -62,7 +50,6 @@ public class EnrollmentControl {
 
     public void checkAlreadyPassedCourse() throws CourseAlreadyPassedException {
         for (OfferedCourse course : courses) {
-            ArrayList<Course> passedCourses = transcript.getPassedCourses();
             for (Course passedCourse : passedCourses) {
                 if (passedCourse.equals(course.getCourse())) {
                     throw new CourseAlreadyPassedException(course.getCourse().getName());
@@ -70,4 +57,16 @@ public class EnrollmentControl {
             }
         }
     }
+
+    public void checkPrerequisitesPassed() throws PrerequisitesNotPassedException {
+        for (OfferedCourse course : courses) {
+            List<Course> prerequisites = course.getCourse().getPrerequisites();
+            for (Course preRequisite : prerequisites) {
+                if (!passedCourses.contains(preRequisite)) {
+                    throw new PrerequisitesNotPassedException(preRequisite.getName(), course.getCourse().getName());
+                }
+            }
+        }
+    }
+
 }
