@@ -5,7 +5,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 public class Transcript {
-    private Map<Term, TermGradeReport> transcriptMap = new HashMap<>();
+    private final Map<Term, TermGradeReport> transcriptMap = new HashMap<>();
 
     public Transcript() {}
 
