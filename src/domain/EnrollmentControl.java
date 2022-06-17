@@ -6,49 +6,75 @@ import java.util.List;
 import domain.exceptions.CourseAlreadyPassedException;
 import domain.exceptions.EnrollmentRulesViolationException;
 import domain.exceptions.PrerequisitesNotPassedException;
+import domain.exceptions.TotalRequestedUnitsViolationException;
 
 public class EnrollmentControl {
+    private Transcript transcript;
     private List<OfferedCourse> courses;
     private ArrayList<Course> passedCourses;
+    private List<Exception> exceptions;
+    private Student student;
 
     public void enroll(Student student, List<OfferedCourse> courses) throws EnrollmentRulesViolationException {
-        List<Exception> exceptions = new ArrayList<>();
-        Transcript transcript = student.getTranscript();
-
+        transcript = student.getTranscript();
         passedCourses = transcript.getPassedCourses();
-        this.courses = courses;
+		this.courses = courses;
+        this.student = student;
+        exceptions = new ArrayList<>();
 
         try { checkAlreadyPassedCourse(); } catch (CourseAlreadyPassedException e) { exceptions.add(e);}
         try { checkPrerequisitesPassed(); } catch (PrerequisitesNotPassedException e) { exceptions.add(e);}
-
-        for (OfferedCourse o : courses) {
-            for (OfferedCourse o2 : courses) {
-                if (o == o2)
-                    continue;
-                if (o.getExamTime().equals(o2.getExamTime()))
-                    throw new EnrollmentRulesViolationException(String.format("Two offerings %s and %s have the same exam time", o, o2));
-                if (o.getCourse().equals(o2.getCourse()))
-                    throw new EnrollmentRulesViolationException(String.format("%s is requested to be taken twice", o.getCourse().getName()));
+        for (OfferedCourse offeredCourse : courses) {
+            ArrayList<Course> allPassedCourses = transcript.getPassedCourses();
+            for(Course passedCourse: allPassedCourses) {
+                if(passedCourse.equals(offeredCourse.getCourse())) {
+                    throw new EnrollmentRulesViolationException(String.format("The student has already passed %s", offeredCourse.getCourse().getName()));
+                }
             }
-		}
-		int unitsRequested = 0;
-		for (OfferedCourse o : courses)
-			unitsRequested += o.getCourse().getUnits();
+            List<Course> prerequisites = offeredCourse.getCourse().getPrerequisites();
+            nextPre:
+            for (Course preRequisite : prerequisites) {
+                for(Course passedCourse: allPassedCourses) {
+                    if(passedCourse.equals(preRequisite))
+                        continue nextPre;
+                }
+                throw new EnrollmentRulesViolationException(String.format("The student has not passed %s as a prerequisite of %s", preRequisite.getName(), offeredCourse.getCourse().getName()));
+            }
+            for (OfferedCourse possiblyConflictingOfferedCourse : courses) {
+                if (offeredCourse == possiblyConflictingOfferedCourse)
+                    continue;
+                if (offeredCourse.getExamTime().equals(possiblyConflictingOfferedCourse.getExamTime()))
+                    throw new EnrollmentRulesViolationException(String.format("Two offerings %s and %s have the same exam time", offeredCourse, possiblyConflictingOfferedCourse));
+                if (offeredCourse.getCourse().equals(possiblyConflictingOfferedCourse.getCourse()))
+                    throw new EnrollmentRulesViolationException(String.format("%s is requested to be taken twice", offeredCourse.getCourse().getName()));
+            }
+        }
+        try {
+            checkTotalRequestedUnitsViolation();
+        } catch(TotalRequestedUnitsViolationException e) {
+            exceptions.add(e);
+        }
 
-		double gpa = transcript.calculateGPA();
-		if ((gpa < 12 && unitsRequested > 14) ||
-				(gpa < 16 && unitsRequested > 16) ||
-				(unitsRequested > 20))
-			throw new EnrollmentRulesViolationException(String.format("Number of units (%d) requested does not match GPA of %f", unitsRequested, gpa));
-		for (OfferedCourse o : courses)
-			student.takeCourse(o.getCourse(), o.getSection());
+        finalizeCourseSelection();
 
         if (!exceptions.isEmpty()) {
             throw new EnrollmentRulesViolationException(exceptions.get(0).getMessage());
         }
-	}
+    }
 
-    public void checkAlreadyPassedCourse() throws CourseAlreadyPassedException {
+    private int getUnitsRequested() {
+        int unitsRequested = 0;
+        for (OfferedCourse offeredCourse: courses) {
+            unitsRequested += offeredCourse.getCourse().getUnits();
+        }
+        return unitsRequested;
+    }
+
+    private boolean violatesTotalRequestedUnitsRules(double gpa, int requestedUnits) {
+        return (gpa < 12 && requestedUnits > 14) || (gpa < 16 && requestedUnits > 16) || (requestedUnits > 20);
+    }
+
+    private void checkAlreadyPassedCourse() throws CourseAlreadyPassedException {
         for (OfferedCourse course : courses) {
             for (Course passedCourse : passedCourses) {
                 if (passedCourse.equals(course.getCourse())) {
@@ -69,4 +95,16 @@ public class EnrollmentControl {
         }
     }
 
+
+    private void checkTotalRequestedUnitsViolation() throws TotalRequestedUnitsViolationException {
+        int unitsRequested = getUnitsRequested();
+
+        double gpa = transcript.calculateGPA();
+        if (violatesTotalRequestedUnitsRules(gpa, unitsRequested))
+            throw new TotalRequestedUnitsViolationException(unitsRequested, gpa);
+    }
+
+    private void finalizeCourseSelection() {
+        student.takeCourses(courses);
+    }
 }
