@@ -12,7 +12,6 @@ public class EnrollmentControl {
     private Transcript transcript;
     private List<OfferedCourse> courses;
     private ArrayList<Course> passedCourses;
-    private List<Exception> exceptions;
     private Student student;
 
     public void enroll(Student student, List<OfferedCourse> courses) throws EnrollmentRulesViolationException {
@@ -20,7 +19,8 @@ public class EnrollmentControl {
         passedCourses = transcript.getPassedCourses();
 		this.courses = courses;
         this.student = student;
-        exceptions = new ArrayList<>();
+
+        List<Exception> exceptions = new ArrayList<>();
 
         try { checkAlreadyPassedCourse(); } catch (CourseAlreadyPassedException e) { exceptions.add(e);}
         try { checkPrerequisitesPassed(); } catch (PrerequisitesNotPassedException e) { exceptions.add(e);}
@@ -94,7 +94,6 @@ public class EnrollmentControl {
             }
         }
     }
-
 
     private void checkTotalRequestedUnitsViolation() throws TotalRequestedUnitsViolationException {
         int unitsRequested = getUnitsRequested();
