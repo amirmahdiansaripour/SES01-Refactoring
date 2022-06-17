@@ -27,12 +27,12 @@ public class EnrollmentControl {
             }
 			List<Course> prerequisites = o.getCourse().getPrerequisites();
 			nextPre:
-			for (Course pre : prerequisites) {
+			for (Course preRequisite : prerequisites) {
                 for(Course passedCourse: allPassedCourses) {
-                    if(passedCourse.equals(pre))
+                    if(passedCourse.equals(preRequisite))
                         continue nextPre;
                 }
-				throw new EnrollmentRulesViolationException(String.format("The student has not passed %s as a prerequisite of %s", pre.getName(), o.getCourse().getName()));
+				throw new EnrollmentRulesViolationException(String.format("The student has not passed %s as a prerequisite of %s", preRequisite.getName(), o.getCourse().getName()));
 			}
             for (OfferedCourse o2 : courses) {
                 if (o == o2)
