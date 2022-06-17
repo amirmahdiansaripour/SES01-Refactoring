@@ -3,10 +3,7 @@ package domain;
 import java.util.ArrayList;
 import java.util.List;
 
-import domain.exceptions.CourseAlreadyPassedException;
-import domain.exceptions.EnrollmentRulesViolationException;
-import domain.exceptions.PrerequisitesNotPassedException;
-import domain.exceptions.TotalRequestedUnitsViolationException;
+import domain.exceptions.*;
 
 public class EnrollmentControl {
     private Transcript transcript;
@@ -24,36 +21,18 @@ public class EnrollmentControl {
 
         try { checkAlreadyPassedCourse(); } catch (CourseAlreadyPassedException e) { exceptions.add(e);}
         try { checkPrerequisitesPassed(); } catch (PrerequisitesNotPassedException e) { exceptions.add(e);}
+        try { checkExamConflict();} catch (ExamTimesConflictException e) { exceptions.add(e);}
+
         for (OfferedCourse offeredCourse : courses) {
-            ArrayList<Course> allPassedCourses = transcript.getPassedCourses();
-            for(Course passedCourse: allPassedCourses) {
-                if(passedCourse.equals(offeredCourse.getCourse())) {
-                    throw new EnrollmentRulesViolationException(String.format("The student has already passed %s", offeredCourse.getCourse().getName()));
-                }
-            }
-            List<Course> prerequisites = offeredCourse.getCourse().getPrerequisites();
-            nextPre:
-            for (Course preRequisite : prerequisites) {
-                for(Course passedCourse: allPassedCourses) {
-                    if(passedCourse.equals(preRequisite))
-                        continue nextPre;
-                }
-                throw new EnrollmentRulesViolationException(String.format("The student has not passed %s as a prerequisite of %s", preRequisite.getName(), offeredCourse.getCourse().getName()));
-            }
+
             for (OfferedCourse possiblyConflictingOfferedCourse : courses) {
                 if (offeredCourse == possiblyConflictingOfferedCourse)
                     continue;
-                if (offeredCourse.getExamTime().equals(possiblyConflictingOfferedCourse.getExamTime()))
-                    throw new EnrollmentRulesViolationException(String.format("Two offerings %s and %s have the same exam time", offeredCourse, possiblyConflictingOfferedCourse));
                 if (offeredCourse.getCourse().equals(possiblyConflictingOfferedCourse.getCourse()))
                     throw new EnrollmentRulesViolationException(String.format("%s is requested to be taken twice", offeredCourse.getCourse().getName()));
             }
         }
-        try {
-            checkTotalRequestedUnitsViolation();
-        } catch(TotalRequestedUnitsViolationException e) {
-            exceptions.add(e);
-        }
+        try { checkTotalRequestedUnitsViolated(); } catch(TotalRequestedUnitsViolationException e) { exceptions.add(e);}
 
         finalizeCourseSelection();
 
@@ -70,7 +49,7 @@ public class EnrollmentControl {
         return unitsRequested;
     }
 
-    private boolean violatesTotalRequestedUnitsRules(double gpa, int requestedUnits) {
+    private boolean totalRequestedUnitsRulesViolated(double gpa, int requestedUnits) {
         return (gpa < 12 && requestedUnits > 14) || (gpa < 16 && requestedUnits > 16) || (requestedUnits > 20);
     }
 
@@ -95,11 +74,32 @@ public class EnrollmentControl {
         }
     }
 
-    private void checkTotalRequestedUnitsViolation() throws TotalRequestedUnitsViolationException {
+    public void checkExamConflict() throws ExamTimesConflictException {
+        for (OfferedCourse course1 : courses) {
+            for (OfferedCourse course2 : courses) {
+                if (course1 != course2 && course1.getExamTime().equals(course2.getExamTime()))
+                    throw new ExamTimesConflictException(course1.getCourse().getName(), course2.getCourse().getName());
+            }
+        }
+    }
+
+  /*  public void check() {
+        for (OfferedCourse course1 : courses) {
+            for (OfferedCourse course2 : courses) {
+                if (course1 == course2) continue;
+                if (course1.getExamTime().equals(course2.getExamTime()))
+                    throw new EnrollmentRulesViolationException(String.format("Two offerings %s and %s have the same exam time", course1, course2));
+                if (course1.getCourse().equals(course2.getCourse()))
+                    throw new EnrollmentRulesViolationException(String.format("%s is requested to be taken twice", course1.getCourse().getName()));
+            }
+        }
+    }
+*/
+    private void checkTotalRequestedUnitsViolated() throws TotalRequestedUnitsViolationException {
         int unitsRequested = getUnitsRequested();
 
         double gpa = transcript.calculateGPA();
-        if (violatesTotalRequestedUnitsRules(gpa, unitsRequested))
+        if (totalRequestedUnitsRulesViolated(gpa, unitsRequested))
             throw new TotalRequestedUnitsViolationException(unitsRequested, gpa);
     }
 
