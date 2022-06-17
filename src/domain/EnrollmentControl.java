@@ -24,7 +24,7 @@ public class EnrollmentControl {
         try { checkExamConflict(); } catch (ExamTimesConflictException e) { exceptions.add(e);}
         try { checkCourseTakenTwice(); } catch (CourseTakenTwiceException e) { exceptions.add(e);}
         try {
-            checkTotalRequestedUnitsViolated();
+            checkTotalRequestedUnitsRulesViolated();
             finalizeCourseSelection();
         } catch(TotalRequestedUnitsViolationException e) { exceptions.add(e);}
 
@@ -43,7 +43,7 @@ public class EnrollmentControl {
         return unitsRequested;
     }
 
-    private boolean totalRequestedUnitsRulesViolated(double gpa, int requestedUnits) {
+    private boolean violatedTotalRequestedUnitsRules(double gpa, int requestedUnits) {
         return (gpa < 12 && requestedUnits > 14) || (gpa < 16 && requestedUnits > 16) || (requestedUnits > 20);
     }
 
@@ -86,11 +86,11 @@ public class EnrollmentControl {
         }
     }
 
-    private void checkTotalRequestedUnitsViolated() throws TotalRequestedUnitsViolationException {
+    private void checkTotalRequestedUnitsRulesViolated() throws TotalRequestedUnitsViolationException {
         int unitsRequested = getUnitsRequested();
 
         double gpa = transcript.calculateGPA();
-        if (totalRequestedUnitsRulesViolated(gpa, unitsRequested))
+        if (violatedTotalRequestedUnitsRules(gpa, unitsRequested))
             throw new TotalRequestedUnitsViolationException(unitsRequested, gpa);
     }
 
