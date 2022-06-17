@@ -23,6 +23,11 @@ public class Student {
 		currentTerm.add(new CourseSection(course, section));
 	}
 
+	public void takeCourses(List<OfferedCourse> newCourses) {
+		for (OfferedCourse offeredCourse: newCourses)
+			takeCourse(offeredCourse.getCourse(), offeredCourse.getSection());
+	}
+
 	public void addTranscriptRecord(Course course, Term term, double grade) {
 	    transcript.addTranscriptRecord(course, term, grade);
     }

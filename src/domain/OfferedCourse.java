@@ -37,4 +37,5 @@ public class OfferedCourse {
 	public String toString() {
 		return course.getName() + " - " + section;
 	}
+
 }
