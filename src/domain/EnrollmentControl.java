@@ -2,13 +2,12 @@ package domain;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 
 import domain.exceptions.EnrollmentRulesViolationException;
 
-public class EnrollCtrl {
-	public void enroll(Student s, List<Exam> courses) throws EnrollmentRulesViolationException {
-        Transcript transcript = s.getTranscript();
+public class EnrollmentControl {
+	public void enroll(Student student, List<Exam> courses) throws EnrollmentRulesViolationException {
+        Transcript transcript = student.getTranscript();
 		for (Exam o : courses) {
             ArrayList<Course> allPassedCourses = transcript.getPassedCourses();
             for(Course passedCourse: allPassedCourses) {
@@ -44,6 +43,6 @@ public class EnrollCtrl {
 				(unitsRequested > 20))
 			throw new EnrollmentRulesViolationException(String.format("Number of units (%d) requested does not match GPA of %f", unitsRequested, gpa));
 		for (Exam o : courses)
-			s.takeCourse(o.getCourse(), o.getSection());
+			student.takeCourse(o.getCourse(), o.getSection());
 	}
 }
