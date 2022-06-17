@@ -1,24 +1,24 @@
 package domain;
 import java.util.Date;
 
-public class Exam {
+public class OfferedCourse {
 	private final Course course;
 	private final int section;
 	private final Date examDate;
 
-	public Exam(Course course) {
+	public OfferedCourse(Course course) {
 		this.course = course;
 		this.section = 1;
 		this.examDate = java.sql.Date.valueOf(java.time.LocalDate.now());
 	}
 
-	public Exam(Course course, Date examDate) {
+	public OfferedCourse(Course course, Date examDate) {
 		this.course = course;
 		this.section = 1;
 		this.examDate = examDate;
 	}
 
-	public Exam(Course course, Date examDate, int section) {
+	public OfferedCourse(Course course, Date examDate, int section) {
 		this.course = course;
 		this.section = section;
 		this.examDate = examDate;
