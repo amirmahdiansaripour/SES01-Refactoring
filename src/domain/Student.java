@@ -16,13 +16,13 @@ public class Student {
 		this.transcript = new Transcript();
 		this.currentTerm = new ArrayList<>();
 	}
-	
-	public void takeCourse(Course c, int section) {
-		currentTerm.add(new CourseSection(c, section));
-	}
 
 	public Transcript getTranscript() {
 		return transcript;
+	}
+
+	public void takeCourse(Course course, int section) {
+		currentTerm.add(new CourseSection(course, section));
 	}
 
 	public void addTranscriptRecord(Course course, Term term, double grade) {
