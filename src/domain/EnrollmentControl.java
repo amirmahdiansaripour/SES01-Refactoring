@@ -29,11 +29,7 @@ public class EnrollmentControl {
         } catch(TotalRequestedUnitsViolationException e) { exceptions.add(e);}
 
         if (!exceptions.isEmpty()) {
-            List<String> errorMessages = new ArrayList<>();
-            for (Exception e: exceptions) {
-                errorMessages.add(e.getMessage());
-            }
-            return errorMessages;
+            return getErrorMessages(exceptions);
         }
 
         return null;
@@ -100,5 +96,13 @@ public class EnrollmentControl {
 
     private void finalizeCourseSelection() {
         student.takeCourses(courses);
+    }
+
+    private List<String> getErrorMessages(List<Exception> exceptions){
+        List<String> errorMessages = new ArrayList<>();
+        for (Exception e: exceptions) {
+            errorMessages.add(e.getMessage());
+        }
+        return errorMessages;
     }
 }
