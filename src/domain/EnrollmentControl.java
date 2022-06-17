@@ -11,7 +11,7 @@ public class EnrollmentControl {
     private ArrayList<Course> passedCourses;
     private Student student;
 
-    public void enroll(Student student, List<OfferedCourse> courses) throws EnrollmentRulesViolationException {
+    public List<String> enroll(Student student, List<OfferedCourse> courses) {
         transcript = student.getTranscript();
         passedCourses = transcript.getPassedCourses();
 		this.courses = courses;
@@ -23,23 +23,20 @@ public class EnrollmentControl {
         try { checkPrerequisitesPassed(); } catch (PrerequisitesNotPassedException e) { exceptions.add(e);}
         try { checkExamConflict(); } catch (ExamTimesConflictException e) { exceptions.add(e);}
         try { checkCourseTakenTwice(); } catch (CourseTakenTwiceException e) { exceptions.add(e);}
-
-        for (OfferedCourse offeredCourse : courses) {
-
-            for (OfferedCourse possiblyConflictingOfferedCourse : courses) {
-                if (offeredCourse == possiblyConflictingOfferedCourse)
-                    continue;
-                if (offeredCourse.getCourse().equals(possiblyConflictingOfferedCourse.getCourse()))
-                    throw new EnrollmentRulesViolationException(String.format("%s is requested to be taken twice", offeredCourse.getCourse().getName()));
-            }
-        }
-        try { checkTotalRequestedUnitsViolated(); } catch(TotalRequestedUnitsViolationException e) { exceptions.add(e);}
-
-        finalizeCourseSelection();
+        try {
+            checkTotalRequestedUnitsViolated();
+            finalizeCourseSelection();
+        } catch(TotalRequestedUnitsViolationException e) { exceptions.add(e);}
 
         if (!exceptions.isEmpty()) {
-            throw new EnrollmentRulesViolationException(exceptions.get(0).getMessage());
+            List<String> errorMessages = new ArrayList<>();
+            for (Exception e: exceptions) {
+                errorMessages.add(e.getMessage());
+            }
+            return errorMessages;
         }
+
+        return null;
     }
 
     private int getUnitsRequested() {
