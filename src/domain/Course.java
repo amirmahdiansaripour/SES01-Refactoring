@@ -8,7 +8,7 @@ public class Course {
 	private String name;
 	private int units;
 	
-	List<Course> prerequisites;
+	private List<Course> prerequisites;
 
 	public Course(String id, String name, int units) {
 		this.id = id;
@@ -17,11 +17,11 @@ public class Course {
 		prerequisites = new ArrayList<Course>();
 	}
 	
-	public void addPre(Course c) {
-		getPrerequisites().add(c);
+	public void addPrerequisites(Course c) {
+		this.prerequisites.add(c);
 	}
 
-	public Course withPre(Course... pres) {
+	public Course addSamePrerequisites(Course... pres) {
 		prerequisites.addAll(Arrays.asList(pres));
 		return this;
 	}
@@ -55,7 +55,9 @@ public class Course {
 	}
 
 	public boolean equals(Object obj) {
-		Course other = (Course)obj;
-		return id.equals(other.id);
+		if(obj instanceof Course other) {
+			return id.equals(other.id);
+		}
+		return false;
 	}
 }

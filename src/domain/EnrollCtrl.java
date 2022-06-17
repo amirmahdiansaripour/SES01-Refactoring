@@ -15,9 +15,9 @@ public class EnrollCtrl {
                         throw new EnrollmentRulesViolationException(String.format("The student has already passed %s", o.getCourse().getName()));
                 }
             }
-			List<Course> prereqs = o.getCourse().getPrerequisites();
+			List<Course> prerequisites = o.getCourse().getPrerequisites();
 			nextPre:
-			for (Course pre : prereqs) {
+			for (Course pre : prerequisites) {
                 for (Map.Entry<Term, Map<Course, Double>> tr : transcript.entrySet()) {
                     for (Map.Entry<Course, Double> r : tr.getValue().entrySet()) {
                         if (r.getKey().equals(pre) && r.getValue() >= 10)
