@@ -6,8 +6,8 @@ import java.util.Collection;
 import java.util.List;
 
 public class Term {
-	private String name;
-	private Date startDate;
+	private final String name;
+	private final Date startDate;
 
 	public Term(String name) {
 		this.name = name;

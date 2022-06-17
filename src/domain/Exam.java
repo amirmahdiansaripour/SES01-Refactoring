@@ -2,9 +2,9 @@ package domain;
 import java.util.Date;
 
 public class Exam {
-	private Course course;
-	private int section;
-	private Date examDate;
+	private final Course course;
+	private final int section;
+	private final Date examDate;
 
 	public Exam(Course course) {
 		this.course = course;
