@@ -11,7 +11,7 @@ public class Term {
 
 	public Term(String name) {
 		this.name = name;
-		this.startDate = null;
+		this.startDate = Date.valueOf(java.time.LocalDate.now());
 	}
 
 	public Term(String name, Date startDate) {
@@ -22,14 +22,13 @@ public class Term {
 	public String getName() {
 		return name;
 	}
-	
-	public String toString() {
-		return name;
-	}
 
 	public Date getStartDate() {
 		return startDate;
 	}
-	
-	
+
+	public String toString() {
+		return name;
+	}
+
 }
