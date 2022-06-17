@@ -17,12 +17,8 @@ public class Student {
 		this.currentTerm = new ArrayList<>();
 	}
 	
-	public void takeCourse(Course c, int section) {
-		currentTerm.add(new CourseSection(c, section));
-	}
-
-	public Map<Term, Map<Course, Double>> getTranscript() {
-		return transcript;
+	public void takeCourse(Course course, int section) {
+		currentTerm.add(new CourseSection(course, section));
 	}
 
 	public void addTranscriptRecord(Course course, Term term, double grade) {
@@ -31,17 +27,21 @@ public class Student {
 	    transcript.get(term).put(course, grade);
     }
 
-    public List<CourseSection> getCurrentTerm() {
-        return currentTerm;
-    }
-
-    public String getId() {
+	public String getId() {
 		return id;
 	}
 
 	public String getName() {
 		return name;
 	}
+
+	public Map<Term, Map<Course, Double>> getTranscript() {
+		return transcript;
+	}
+
+    public List<CourseSection> getCurrentTerm() {
+        return currentTerm;
+    }
 	
 	public String toString() {
 		return name;
