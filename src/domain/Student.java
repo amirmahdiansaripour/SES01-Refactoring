@@ -7,13 +7,13 @@ import java.util.Map;
 public class Student {
 	private final String id;
 	private final String name;
-	private final Map<Term, Map<Course, Double>> transcript;
+	private final Transcript transcript;
 	private final List<CourseSection> currentTerm;
 
 	public Student(String id, String name) {
 		this.id = id;
 		this.name = name;
-		this.transcript = new HashMap<>();
+		this.transcript = new Transcript();
 		this.currentTerm = new ArrayList<>();
 	}
 	
@@ -21,14 +21,12 @@ public class Student {
 		currentTerm.add(new CourseSection(c, section));
 	}
 
-	public Map<Term, Map<Course, Double>> getTranscript() {
+	public Transcript getTranscript() {
 		return transcript;
 	}
 
 	public void addTranscriptRecord(Course course, Term term, double grade) {
-	    if (!transcript.containsKey(term))
-	        transcript.put(term, new HashMap<>());
-	    transcript.get(term).put(course, grade);
+	    transcript.addTranscriptRecord(course, term, grade);
     }
 
     public List<CourseSection> getCurrentTerm() {
